@@ -3,21 +3,28 @@ package vistas;
 import javax.swing.*;
 import org.bson.Document;
 import com.mongodb.client.MongoCollection;
+import dao.CitaDao;
+import dao.CitaDaoMongo;
+import modelo.Cita;
 import modelo.ConexionMongoDB;
+import validador.ValidadorCitas;
 
 /**
  *
  * @author poeta
  */
 public class FormularioCitas extends JFrame {
+    
     private JTextField txtMascotaId, txtVeterinarioId, txtFecha, txtHora;
     private JButton btnAgendar;
 
     public FormularioCitas() {
+        
         setTitle("Agendar Cita Médica");
         setSize(400, 300);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(null);
+        setLocationRelativeTo(null);
 
         JLabel lblMascota = new JLabel("ID Mascota:");
         lblMascota.setBounds(30, 30, 100, 25);
@@ -61,15 +68,32 @@ public class FormularioCitas extends JFrame {
     }
 
     private void agendarCita() {
-        MongoCollection<Document> citas = ConexionMongoDB.getDatabase().getCollection("citas");
+        String idMascota = txtMascotaId.getText();
+        String idVet = txtVeterinarioId.getText();
+        String fecha = txtFecha.getText();
+        String hora = txtHora.getText();
 
-        Document cita = new Document("idMascota", txtMascotaId.getText())
-                .append("idVeterinario", txtVeterinarioId.getText())
-                .append("fecha", txtFecha.getText())
-                .append("hora", txtHora.getText())
-                .append("estado", "Agendada");
+        CitaDao dao = new CitaDaoMongo();
+        ValidadorCitas validador = new ValidadorCitas(dao);
 
-        citas.insertOne(cita);
-        JOptionPane.showMessageDialog(this, "Cita agendada correctamente.");
+        if (!validador.esFechaValida(fecha)) {
+            JOptionPane.showMessageDialog(this, "Fecha inválida o anterior a hoy.");
+            return;
+        }
+
+        if (validador.hayConflicto(fecha, hora, idVet)) {
+            JOptionPane.showMessageDialog(this, "Conflicto: ya existe una cita en esa fecha y hora.");
+            return;
+        }
+
+        Cita cita = new Cita();
+        cita.setIdMascota(idMascota);
+        cita.setIdVeterinario(idVet);
+        cita.setFecha(fecha);
+        cita.setHora(hora);
+        cita.setEstado("Agendada");
+
+        dao.insertar(cita);
+        JOptionPane.showMessageDialog(this, "Cita agendada exitosamente.");
     }
 }
