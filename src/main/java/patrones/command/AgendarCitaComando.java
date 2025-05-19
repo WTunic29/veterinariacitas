@@ -8,8 +8,7 @@ import patrones.state.EstadoAgendada;
  * @author poeta
  */
 public class AgendarCitaComando implements ComandoCita {
-    
-    private Cita cita;
+    private final Cita cita;
 
     public AgendarCitaComando(Cita cita) {
         this.cita = cita;
@@ -17,8 +16,9 @@ public class AgendarCitaComando implements ComandoCita {
 
     @Override
     public void ejecutar() {
-        cita.setEstadoCita(new EstadoAgendada());
-        System.out.println("Cita agendada: " + cita.getFecha());
+        if (cita.getEstado() == null || cita.getEstado().isEmpty()) {
+            cita.setEstadoCita(new EstadoAgendada());
+        }
+        System.out.println("Cita agendada: " + cita.getFecha() + " a las " + cita.getHora());
     }
-    
 }

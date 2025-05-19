@@ -10,7 +10,9 @@ public class Veterinariacitas {
 
     public static void main(String[] args) {
         
-        SwingUtilities.invokeLater(() -> new MenuPrincipal());
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            new seguridad.Login(); // Comienza con el login
+        });
         
     }
 }
